@@ -30,7 +30,7 @@
     var app = new PIXI.Application({
         width:640,
         height:480,
-        backgroundColor: 0x000000
+        backgroundColor: 0x41529E
     });
     var stage = app.stage;
     var view = app.view;
@@ -44,17 +44,38 @@
         The important bit is that they are each a grouping or state of different interface elements that need to be on the screen at different times.
 
         We'll call them "scenes" – if only because they're going up onto the Pixi.js stage object when we need them.
-    * /
+    */
 
     //
     // Let's create a few really boring scenes using Pixi.js Containers
     //
 
+    // header text style
+    const headerStyle = new PIXI.TextStyle({
+        fill: "#d2f1f9",
+        fontFamily: "Impact",
+        fontSize: 63,
+        letterSpacing: 3,
+        lineJoin: "round",
+        stroke: "#120d0d",
+        strokeThickness: 3,
+        textBaseline: "bottom"
+    });
+
+    const buttonStyle = new PIXI.TextStyle({
+        fill: "#e4f7fb",
+        fontFamily: "Courier New",
+        fontSize: 30,
+        lineJoin: "round",
+        textBaseline: "bottom"
+    })
+
+
     //SCENE 1
     let scene1 = new PIXI.Container();
 
     //Using our button object let's create a "next" button.
-    let nextButton = UI.Button(0,0,"Next >");
+    let nextButton = UI.Button(0,0,"Next >", {backgroundColor: 0x333333, textStyle: buttonStyle});
     
     //Let's place it in the bottom right-hand corner of the screen (regardless of size)
     nextButton.x = app.view.width  - nextButton.width;
@@ -66,14 +87,40 @@
     //And let's add some text to tell us which scene we're on
     let scene1Text = new PIXI.Text("Scene 1",{fill:0xFFFFFF});
 
+    //title
+    let scene1Header = new PIXI.Text("Fish In My Tank", headerStyle);
+    scene1Header.anchor.set(.5);
+    scene1Header.position.set(-scene1Header.width / 2, (app.view.height / 2) - scene1Header.height / 2);
+
+    //create underline with pixi graphics
+    let underline = new PIXI.Graphics();
+    underline.beginFill(0x000000);
+    underline.drawRect(app.view.width / 2, app.view.height / 2, scene1Header.width, 5);
+    //make into texture so I can turn graphic into sprite
+    let underlineTexture = app.renderer.generateTexture(underline);
+    let underlineSprite = new PIXI.Sprite(underlineTexture);
+    //since it's a sprite now, I can set a position and anchor point so it can scale the way I want it to
+    underlineSprite.position.set(app.view.width / 2 + scene1Header.width / 2, app.view.height / 2);
+    underlineSprite.anchor = new PIXI.Point(1, 1);
+    underlineSprite.scale.x = .2;
+
+    let introAnimation = async () => {
+        await Animate.to(scene1Header, {x: app.view.width / 2, y: scene1Header.position.y, duration: 1000, easing: Animate.easeInOutBack});
+        await Animate.to(underlineSprite, {scale: {x: 1, y: 1}, duration: 500, easing: Animate.easeInOut});
+    };
+    
     //And place it into the scene
     scene1.addChild(scene1Text);
+    scene1.addChild(scene1Header);
+    scene1.addChild(underlineSprite);
+
+    introAnimation();
 
 
     //SCENE 2
     let scene2 = new PIXI.Container();
 
-    //Using our button object let's create a "next" button.
+    //Using our button object let's create a "back" button.
     let backButton = UI.Button(0,0,"< Back");
     
     //Let's place it in the bottom left-hand corner of the screen (regardless of size)
@@ -100,7 +147,7 @@
 
         The easiest, ugliest way to swap between scenes, would be to assign some code to each button to pull the current scene off the stage and replace it with another.
 
-    * /
+    */
 
     //
     // Swapping between scenes
@@ -206,7 +253,7 @@
 
         Let's create a system for scene management.
 
-    * /
+    */
 
     //Let's call it the Director. It calls the shots.
     var Director = {
@@ -351,7 +398,7 @@
 
         Now let's set up our prior scenes with the Director instead.
 
-    * /
+    */
 
     Director.addScene("first",scene1);
     Director.addScene("second",scene2);
