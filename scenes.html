@@ -54,7 +54,7 @@
     const headerStyle = new PIXI.TextStyle({
         fill: "#d2f1f9",
         fontFamily: "Impact",
-        fontSize: 63,
+        fontSize: 80,
         letterSpacing: 3,
         lineJoin: "round",
         stroke: "#120d0d",
@@ -67,6 +67,16 @@
         fontFamily: "Courier New",
         fontSize: 30,
         lineJoin: "round",
+        textBaseline: "bottom",
+        lineHeight: 10,
+    });
+
+    const sceneTitleStyle = new PIXI.TextStyle({
+        fill: "#d2f1f9",
+        fontFamily: "Impact",
+        fontSize: 40,
+        letterSpacing: 3,
+        lineJoin: "round",
         textBaseline: "bottom"
     })
 
@@ -78,41 +88,51 @@
     let nextButton = UI.Button(0,0,"Next >", {backgroundColor: 0x333333, textStyle: buttonStyle});
     
     //Let's place it in the bottom right-hand corner of the screen (regardless of size)
-    nextButton.x = app.view.width  - nextButton.width;
-    nextButton.y = app.view.height - nextButton.height;
+    nextButton.x = view.width  - nextButton.width;
+    nextButton.y = view.height - nextButton.height;
 
     //And place it into the scene
     scene1.addChild(nextButton);
 
-    //And let's add some text to tell us which scene we're on
-    let scene1Text = new PIXI.Text("Scene 1",{fill:0xFFFFFF});
-
     //title
-    let scene1Header = new PIXI.Text("Fish In My Tank", headerStyle);
+    let scene1Header = new PIXI.Text("Meet My Fish", headerStyle);
     scene1Header.anchor.set(.5);
-    scene1Header.position.set(-scene1Header.width / 2, (app.view.height / 2) - scene1Header.height / 2);
+    scene1Header.position.set(-scene1Header.width / 2, (view.height / 2) - scene1Header.height / 2);
 
     //create underline with pixi graphics
     let underline = new PIXI.Graphics();
     underline.beginFill(0x000000);
-    underline.drawRect(app.view.width / 2, app.view.height / 2, scene1Header.width, 5);
+    underline.drawRect(view.width / 2, view.height / 2, scene1Header.width, 5);
+
     //make into texture so I can turn graphic into sprite
     let underlineTexture = app.renderer.generateTexture(underline);
     let underlineSprite = new PIXI.Sprite(underlineTexture);
+
     //since it's a sprite now, I can set a position and anchor point so it can scale the way I want it to
-    underlineSprite.position.set(app.view.width / 2 + scene1Header.width / 2, app.view.height / 2);
+    underlineSprite.position.set(view.width / 2 + scene1Header.width / 2, view.height / 2);
     underlineSprite.anchor = new PIXI.Point(1, 1);
     underlineSprite.scale.x = .2;
 
     let introAnimation = async () => {
-        await Animate.to(scene1Header, {x: app.view.width / 2, y: scene1Header.position.y, duration: 1000, easing: Animate.easeInOutBack});
+        await Animate.to(scene1Header, {x: view.width / 2, y: scene1Header.position.y, duration: 1000, easing: Animate.easeInOutBack});
         await Animate.to(underlineSprite, {scale: {x: 1, y: 1}, duration: 500, easing: Animate.easeInOut});
     };
+
+    let title = new PIXI.Container();
+    title.addChild(scene1Header);
+    title.addChild(underlineSprite);
+
+    title.interactive = true;
+    title.on('pointerover', async () => {
+        underlineSprite.position.set(view.width / 2 + scene1Header.width / 2, view.height / 2);
+        underlineSprite.anchor = new PIXI.Point(1, 1);
+        await Animate.to(underlineSprite, {scale: {x: .2, y: 1}, duration: 500, easing: Animate.easeInOut});
+        introAnimation();
+    });
     
     //And place it into the scene
-    scene1.addChild(scene1Text);
-    scene1.addChild(scene1Header);
-    scene1.addChild(underlineSprite);
+    // scene1.addChild(scene1Text);
+    scene1.addChild(title);
 
     introAnimation();
 
@@ -121,24 +141,127 @@
     let scene2 = new PIXI.Container();
 
     //Using our button object let's create a "back" button.
-    let backButton = UI.Button(0,0,"< Back");
+    let backButton = UI.Button(0,0,"< Back", {backgroundColor: 0x333333, textStyle: buttonStyle});
     
     //Let's place it in the bottom left-hand corner of the screen (regardless of size)
     backButton.x = 0;
     backButton.y = app.view.height - backButton.height;
 
-    //And place it into the scene
+    //Using our button object let's create a "next" button.
+    let nextButton1 = UI.Button(0,0,"Next >", {backgroundColor: 0x333333, textStyle: buttonStyle});
+    
+    //Let's place it in the bottom right-hand corner of the screen (regardless of size)
+    nextButton1.x = view.width  - nextButton1.width;
+    nextButton1.y = view.height - nextButton1.height;
+    
+
+    let scene2Title = new PIXI.Text("Gerald", sceneTitleStyle);
+    scene2Title.position.set(10, 5);
+
+    //add a fish
+    let byFish = new PIXI.Sprite.from("img/by-fish.png");
+    byFish.anchor.set(.5);
+    byFish.scale.set(.6);
+    byFish.position.set(view.width / 2, view.height / 2);
+
+    let moveByFish = async () => {
+        await Animate.to(byFish, {tint: 0x00ff00, duration: 2000});
+        await Animate.to(byFish, {angle: 360, duration: 2000,  easing: Animate.easeInOut});
+        await Animate.to(byFish, {alpha: 1, duration: 800});
+        await Animate.to(byFish, {tint: 0xcc0000, duration: 2000});
+        await Animate.to(byFish, {angle: -360, duration: 2000, easing: Animate.easeInOut});
+        await Animate.to(byFish, {alpha: .5, duration: 800});
+        moveByFish();
+    }
+    moveByFish();
+
+    scene2.addChild(scene2Title);
+    scene2.addChild(byFish);
+    scene2.addChild(nextButton1);
     scene2.addChild(backButton);
 
-    //And let's also add some text to tell us which scene we're on
-    let scene2Text = new PIXI.Text("Scene 2",{fill:0xFFFFFF});
+    //SCENE 3
+    let scene3 = new PIXI.Container();
 
-    //And place it into the scene
-    scene2.addChild(scene2Text);
+    let scene3Title = new PIXI.Text("Bart", sceneTitleStyle);
+    scene3Title.position.set(10, 5);
+    
+    //Using our button object let's create a "next" button.
+    let nextButton2 = UI.Button(0,0,"Next >", {backgroundColor: 0x333333, textStyle: buttonStyle});
+    
+    //Let's place it in the bottom right-hand corner of the screen (regardless of size)
+    nextButton2.x = view.width  - nextButton2.width;
+    nextButton2.y = view.height - nextButton2.height;
+
+     //Using our button object let's create a "back" button.
+    let backButton1 = UI.Button(0,0,"< Back", {backgroundColor: 0x333333, textStyle: buttonStyle});
+    
+    //Let's place it in the bottom left-hand corner of the screen (regardless of size)
+    backButton1.x = 0;
+    backButton1.y = app.view.height - backButton1.height;
+
+    let pFish = new PIXI.Sprite.from('img/parrot-fish.png');
+    pFish.anchor.set(.5);
+    pFish.scale.set(.4);
+    pFish.position.set(view.width / 2, view.height / 2);
+
+    let moveParrotFish = async () => {
+        await Animate.wobbleto(pFish, {x: 100, y: 100, duration: 2000, easing: Animate.linear});
+        await Animate.to(pFish, {scale: {x:  -.4, y: .4}, duration: 500, easing: Animate.easeIn});
+        await Animate.wobbleto(pFish, {x: 500, y: 350, duration: 2000, easing: Animate.linear});
+        await Animate.to(pFish, {scale: {x: .4, y: .4}, duration: 500, easing: Animate.easeIn});
+        moveParrotFish();
+    }
+    moveParrotFish();
+    scene3.addChild(backButton1);
+    scene3.addChild(nextButton2);
+    scene3.addChild(pFish);
+    scene3.addChild(scene3Title);
+
+
+    //scene 4
+    let scene4 = new PIXI.Container();
+
+    let scene4Title = new PIXI.Text("Baddie", sceneTitleStyle);
+    scene4Title.position.set(10, 5);
+
+    //Using our button object let's create a "next" button.
+    let nextButton3 = UI.Button(0,0,"Next >", {backgroundColor: 0x333333, textStyle: buttonStyle});
+    
+    //Let's place it in the bottom right-hand corner of the screen (regardless of size)
+    nextButton3.x = view.width  - nextButton3.width;
+    nextButton3.y = view.height - nextButton3.height;
+
+     //Using our button object let's create a "back" button.
+    let backButton2 = UI.Button(0,0,"< Back", {backgroundColor: 0x333333, textStyle: buttonStyle});
+    
+    //Let's place it in the bottom left-hand corner of the screen (regardless of size)
+    backButton2.x = 0;
+    backButton2.y = app.view.height - backButton1.height;
+
+    let redFish = new PIXI.Sprite.from('img/red-fish.png');
+    redFish.anchor.set(.5);
+    redFish.scale.set(.4);
+    redFish.position.set(view.width / 2, view.height / 2);
+
+    let moveRedFish = async () => {
+        await Animate.to(redFish, {scale: {x: .6, y: .6}, duration: 1000, easing: Animate.easeOut});
+        await Animate.to(redFish, {scale: {x: .5, y: .5}, duration: 500, easing: Animate.easeOut});
+        moveRedFish();
+    }
+    moveRedFish();
+
+    scene4.addChild(backButton2);
+    scene4.addChild(nextButton3);
+    scene4.addChild(redFish);
+    scene4.addChild(scene4Title);
 
 
     //Now let's add the first scene to the stage
     app.stage.addChild(scene1);
+
+    
+    
 
 
     /*
@@ -153,15 +276,15 @@
     // Swapping between scenes
     //
 
-    nextButton.onclick = () => {
-        app.stage.removeChild(scene1);
-        app.stage.addChild(scene2);
-    }
+    // nextButton.onclick = () => {
+    //     app.stage.removeChild(scene1);
+    //     app.stage.addChild(scene2);
+    // }
 
-    backButton.onclick = () => {
-        app.stage.removeChild(scene2);
-        app.stage.addChild(scene1);
-    }
+    // backButton.onclick = () => {
+    //     app.stage.removeChild(scene2);
+    //     app.stage.addChild(scene1);
+    // }
 
     /*
 
@@ -402,13 +525,31 @@
 
     Director.addScene("first",scene1);
     Director.addScene("second",scene2);
+    Director.addScene("third", scene3);
+    Director.addScene("fourth", scene4);
 
-    nextButton.onclick = () => {
-        Director.showScene("second");
+    nextButton.onclick = (e) => {
+        Director.swipe(Director.scene["first"], Director.scene["second"], {direction: "left"});
     }
 
-    backButton.onclick = () => {
-        Director.showScene("first");
+    nextButton1.onclick = (e) => {
+        Director.swipe(Director.scene["second"], Director.scene["third"], {direction: "left"});
+    }
+
+    nextButton2.onclick = (e) => {
+        Director.swipe(Director.scene["third"], Director.scene["fourth"], {direction: "left"});
+    }
+
+    backButton.onclick = (e) => {
+        Director.swipe(Director.scene["second"], Director.scene["first"], {direction: "right"});
+    }
+
+    backButton1.onclick = (e) => {
+        Director.swipe(Director.scene["third"], Director.scene["second"], {direction: "right"});
+    }
+
+    backButton2.onclick = (e) => {
+        Director.swipe(Director.scene["fourth"], Director.scene["third"], {direction: "right"});
     }
 
     /*

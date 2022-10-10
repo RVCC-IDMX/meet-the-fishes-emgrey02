@@ -24,7 +24,54 @@ Animate.easeOutBounce = (x) => {
         return n1 * (x -= 2.625 / d1) * x + 0.984375;
     }
 }
-Animate.easeInOutBack = bezier(0.68,-0.55,0.27,1.55);
+Animate.easeInOutBack = bezier(0.68, -0.55, 0.27, 1.55);
+
+Animate.wobbleto = function(obj, end) {
+    return new Promise((resolve, reject) => {
+        let start = {
+            x: obj.x,
+            y: obj.y,
+        }
+
+        if (end.duration == undefined) end.duration = 0;
+        if (end.easing == undefined) end.easing = Animate.linear; 
+
+        var startTime = Date.now();
+
+        function loop() {
+
+            let ticker = Date.now() - startTime;
+            let delta = ticker/end.duration;
+            let ease = end.easing(delta);
+
+            let wobble1 = Math.sin(ticker/100) * 20;
+
+            if (delta >= 1 || end.duration === 0) {
+                obj.x = end.x;
+                obj.y = end.y;
+                
+                resolve();
+                return;
+            }
+
+            
+            let lerp = (a, b, n) => {
+                return (1 - n) * a + n * b;
+            }
+
+
+            obj.x = lerp(start.x,end.x,ease);
+            obj.y = lerp(start.y,end.y,ease);
+            obj.y += wobble1;
+            obj.animationID = requestAnimationFrame(loop);
+
+        }
+        cancelAnimationFrame(obj.animationID);
+        loop();
+
+    });
+}
+
 
 
 //Animate to
@@ -43,7 +90,7 @@ Animate.to = function(obj,end) {
                 x : obj.scale.x,
                 y : obj.scale.y
             },
-            rotation : obj.rotation,
+            angle : obj.angle,
             tint : obj.tint,
             alpha : obj.alpha
         }
@@ -71,7 +118,7 @@ Animate.to = function(obj,end) {
                 if (end.x != undefined) obj.x = end.x;
                 if (end.y != undefined)obj.y = end.y;
                 if (end.scale != undefined) obj.scale.set(end.scale.x,end.scale.y);
-                if (end.rotation != undefined) obj.rotation = end.rotation;
+                if (end.angle != undefined) obj.angle = end.angle;
                 if (end.tint != undefined) obj.tint = end.tint;
                 if (end.alpha != undefined) obj.alpha = end.alpha;
                 console.log("Done!");
@@ -100,12 +147,27 @@ Animate.to = function(obj,end) {
                 );
 
             //Lerp our rotation -- we'll need to clean this up, but later
-            if (end.rotation != undefined)
-                obj.rotation = lerp(start.rotation,end.rotation,ease);
+            if (end.angle != undefined)
+                obj.angle = lerp(start.angle,end.angle,ease);
 
             //Lerp our tint -- we'll also need to clean this up for each channel, but later
-            if (end.tint != undefined)
-                obj.tint = lerp(start.tint,end.tint,ease);
+            if (end.tint != undefined) {
+                // https://gist.github.com/nikolas/b0cce2261f1382159b507dd492e1ceef
+
+                let sRed = (start.tint & 0xff0000) >> 16;
+                let sGreen = (start.tint & 0x00ff00) >> 8;
+                let sBlue = (start.tint & 0x0000ff);
+
+                let eRed = (end.tint & 0xff0000) >> 16;
+                let eGreen = (end.tint &0x00ff00) >> 8;
+                let eBlue = (end.tint & 0x0000ff);
+
+                let rRed = Math.round(lerp(sRed, eRed, ease));
+                let rGreen = Math.round(lerp(sGreen, eGreen, ease));
+                let rBlue = Math.round(lerp(sBlue, eBlue, ease));
+
+                obj.tint = (rRed << 16) + (rGreen << 8) + (rBlue | 0);
+            }
 
             //Lerp our alpha
             if (end.alpha != undefined)

@@ -30,15 +30,15 @@ var UI = {
 
         var buttonBody = new PIXI.Graphics();
             buttonBody.beginFill(params.backgroundColor);
-            buttonBody.drawRect(0, 0, 200, 100);
+            buttonBody.drawRect(0, 0, 150, 50);
             ourButton.addChild(buttonBody);
 
             ourButton.body = buttonBody;
         
         var buttonText = new PIXI.Text(text,params.textStyle);
-            buttonText.anchor.set(.5,.5);
-            buttonText.x = 100;
-            buttonText.y = 50;
+            buttonText.anchor.set(.5);
+            buttonText.x = buttonBody.width / 2;
+            buttonText.y = buttonBody.height / 2 + buttonText.height / 2 -10;
             ourButton.addChild(buttonText);
 
             ourButton.label = buttonText;
@@ -53,27 +53,27 @@ var UI = {
         };
         ourButton.on("click",(e) => ourButton.onclick(e));
         
-        //Pointer down and up
-        ourButton.pointerdown = function (e) {
-            ourButton.alpha = 0.7;
-        };
-        ourButton.on("pointerover", (e) => ourButton.pointerdown(e));
-        
-        ourButton.pointerup = function (e) {
-            ourButton.alpha = 1.0;
-        };
-        ourButton.on("pointerout",(e) => ourButton.pointerup(e));
-
-        //Hover listeners
+        //why are these hover listeners
         ourButton.pointerover = function (e) {
-            ourButton.alpha = 0.9;
+            buttonBody.alpha = 0.7;
         };
-        ourButton.on("pointerover",(e) => ourButton.pointerover(e));
+        ourButton.on("pointerover", (e) => ourButton.pointerover(e)); //bc of this
         
         ourButton.pointerout = function (e) {
-            ourButton.alpha = 1.0;
+            buttonBody.alpha = 1.0;
         };
-        ourButton.on("pointerout",(e) => ourButton.pointerout(e));
+        ourButton.on("pointerout",(e) => ourButton.pointerout(e)); //and this
+
+        //Hover listeners
+        // ourButton.pointerover = function (e) {
+        //     ourButton.tint = 0xff0000;
+        // };
+        // ourButton.on("pointerover",(e) => ourButton.pointerover(e));
+        
+        // ourButton.pointerout = function (e) {
+        //     ourButton.beginFill(0xeeeeee);
+        // };
+        // ourButton.on("pointerout",(e) => ourButton.pointerout(e));
 
         return ourButton;
 
