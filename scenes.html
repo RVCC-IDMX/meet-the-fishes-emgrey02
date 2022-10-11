@@ -249,8 +249,31 @@
         await Animate.to(redFish, {scale: {x: .5, y: .5}, duration: 500, easing: Animate.easeOut});
         moveRedFish();
     }
-    moveRedFish();
 
+    let callRedFish = async (e) => {
+        let posX = e.data.global.x;
+        let posY = e.data.global.y;
+        await Animate.wobbleto(redFish, {x: posX, y: posY, duration: 2000, easing: Animate.easeInOut});
+        await Animate.to(redFish, {scale: {x: -.3, y: .5}, duration: 500, easing: Animate.easeIn});
+        await Animate.to(redFish, {scale: {x: .5, y: .5}, duration: 500, easing: Animate.easeIn});
+        moveRedFish();
+    }
+
+    // Create the background sprite with a basic white texture
+    let bg = new PIXI.Sprite(PIXI.Texture.WHITE);
+    // Set it to fill the screen
+    bg.width = app.screen.width;
+    bg.height = app.screen.height;
+    // Tint it to whatever color you want, here red
+    bg.tint = 0x41529E;
+    // Add a click handler
+    bg.interactive = true;
+    bg.on('pointerdown', (e) => {
+        callRedFish(e);
+    });
+
+    moveRedFish();
+    scene4.addChild(bg);
     scene4.addChild(backButton2);
     scene4.addChild(nextButton3);
     scene4.addChild(redFish);
