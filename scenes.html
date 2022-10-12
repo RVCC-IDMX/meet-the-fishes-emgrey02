@@ -78,21 +78,32 @@
         letterSpacing: 3,
         lineJoin: "round",
         textBaseline: "bottom"
-    })
+    });
+
+    const pStyle = new PIXI.TextStyle({
+        fill: "#e4f7fb",
+        fontFamily: "Helvetica",
+        fontSize: 16,
+    });
 
 
     //SCENE 1
     let scene1 = new PIXI.Container();
 
+    // load background
+    const coralReef = PIXI.Sprite.from("img/coral-reef.png");
+
+    // place background
+    coralReef.anchor.set(0.5);
+    coralReef.scale.set(.7);
+    coralReef.position.set(320, 240);
+    
     //Using our button object let's create a "next" button.
     let nextButton = UI.Button(0,0,"Next >", {backgroundColor: 0x333333, textStyle: buttonStyle});
     
     //Let's place it in the bottom right-hand corner of the screen (regardless of size)
     nextButton.x = view.width  - nextButton.width;
     nextButton.y = view.height - nextButton.height;
-
-    //And place it into the scene
-    scene1.addChild(nextButton);
 
     //title
     let scene1Header = new PIXI.Text("Meet My Fish", headerStyle);
@@ -131,10 +142,11 @@
     });
     
     //And place it into the scene
-    // scene1.addChild(scene1Text);
+    scene1.addChild(coralReef);
+    scene1.addChild(nextButton);
     scene1.addChild(title);
-
     introAnimation();
+
 
 
     //SCENE 2
@@ -155,8 +167,12 @@
     nextButton1.y = view.height - nextButton1.height;
     
 
-    let scene2Title = new PIXI.Text("Gerald", sceneTitleStyle);
+    let scene2Title = new PIXI.Text("Vernon", sceneTitleStyle);
     scene2Title.position.set(10, 5);
+
+    let scene2Paragraph = new PIXI.Text("Vernon is a cool fish. They can do front flips \nand back flips, half disappear, and change \ncolor from bright green to bright red.", pStyle);
+    scene2Paragraph.anchor.set(1, 0);
+    scene2Paragraph.position.set(view.width - 5, 5);
 
     //add a fish
     let byFish = new PIXI.Sprite.from("img/by-fish.png");
@@ -176,6 +192,7 @@
     moveByFish();
 
     scene2.addChild(scene2Title);
+    scene2.addChild(scene2Paragraph);
     scene2.addChild(byFish);
     scene2.addChild(nextButton1);
     scene2.addChild(backButton);
@@ -183,8 +200,12 @@
     //SCENE 3
     let scene3 = new PIXI.Container();
 
-    let scene3Title = new PIXI.Text("Bart", sceneTitleStyle);
+    let scene3Title = new PIXI.Text("Spoop", sceneTitleStyle);
     scene3Title.position.set(10, 5);
+
+    let scene3Paragraph = new PIXI.Text("Spoop is a fish that loves to swim around the tank.\nHe struggles to swim in a straight line so \nhe bounces until he reaches his destination.", pStyle);
+    scene3Paragraph.anchor.set(1, 0);
+    scene3Paragraph.position.set(view.width - 5, 5);
     
     //Using our button object let's create a "next" button.
     let nextButton2 = UI.Button(0,0,"Next >", {backgroundColor: 0x333333, textStyle: buttonStyle});
@@ -217,20 +238,35 @@
     scene3.addChild(nextButton2);
     scene3.addChild(pFish);
     scene3.addChild(scene3Title);
+    scene3.addChild(scene3Paragraph);
 
 
-    //scene 4
+
+    //SCENE 4
     let scene4 = new PIXI.Container();
 
-    let scene4Title = new PIXI.Text("Baddie", sceneTitleStyle);
+    let scene4Title = new PIXI.Text("Loo Loo", sceneTitleStyle);
     scene4Title.position.set(10, 5);
 
-    //Using our button object let's create a "next" button.
-    let nextButton3 = UI.Button(0,0,"Next >", {backgroundColor: 0x333333, textStyle: buttonStyle});
+    let scene4Paragraph = new PIXI.Text("Loo Loo likes to go toward any taps on the glass\nof the fish tank. She bounces like Spoop until she \nreaches the source of the tapping and \nrubs her nose at that spot to show her love.", pStyle);
+    scene4Paragraph.anchor.set(1, 0);
+    scene4Paragraph.position.set(view.width - 5, 5);
+
+    let tap = new PIXI.Graphics();
+    tap.beginFill(0xd2f1f9);
+    tap.drawCircle(30, 30, 30);
+    tap.endFill();
+
+    let tapTexture = app.renderer.generateTexture(tap);
+    let tapSprite = new PIXI.Sprite(tapTexture);
+    tapSprite.anchor.set(.5);
+
+    // //Using our button object let's create a "next" button.
+    // let nextButton3 = UI.Button(0,0,"Next >", {backgroundColor: 0x333333, textStyle: buttonStyle});
     
-    //Let's place it in the bottom right-hand corner of the screen (regardless of size)
-    nextButton3.x = view.width  - nextButton3.width;
-    nextButton3.y = view.height - nextButton3.height;
+    // //Let's place it in the bottom right-hand corner of the screen (regardless of size)
+    // nextButton3.x = view.width  - nextButton3.width;
+    // nextButton3.y = view.height - nextButton3.height;
 
      //Using our button object let's create a "back" button.
     let backButton2 = UI.Button(0,0,"< Back", {backgroundColor: 0x333333, textStyle: buttonStyle});
@@ -259,34 +295,40 @@
         moveRedFish();
     }
 
-    // Create the background sprite with a basic white texture
-    let bg = new PIXI.Sprite(PIXI.Texture.WHITE);
+    let showTap = async (e) => {
+        let posX = e.data.global.x;
+        let posY = e.data.global.y;
+        tapSprite.position.set(posX, posY);
+        tapSprite.alpha = 1;
+        scene4.addChild(tapSprite);
+        await Animate.to(tapSprite, {alpha: 0, duration: 500});
+    }
+
+    // Create the background sprite with a basic empty texture
+    let bg = new PIXI.Sprite(PIXI.Texture.EMPTY);
     // Set it to fill the screen
     bg.width = app.screen.width;
     bg.height = app.screen.height;
-    // Tint it to whatever color you want, here red
-    bg.tint = 0x41529E;
     // Add a click handler
     bg.interactive = true;
-    bg.on('pointerdown', (e) => {
+    bg.on('pointerdown', async (e) => {
+        showTap(e);
         callRedFish(e);
+        
     });
 
     moveRedFish();
     scene4.addChild(bg);
     scene4.addChild(backButton2);
-    scene4.addChild(nextButton3);
     scene4.addChild(redFish);
     scene4.addChild(scene4Title);
+    scene4.addChild(scene4Paragraph);
 
 
     //Now let's add the first scene to the stage
     app.stage.addChild(scene1);
 
     
-    
-
-
     /*
 
         So now we have two scenes set up, and the first scene on stage.
@@ -538,6 +580,21 @@
 
         },
 
+        //rotate and fade out
+        swirl: async (currentScene, nextScene, params) => {
+             //Check duration
+            if (params == undefined) params = {};
+            if (params.duration == undefined) params.duration = 500;
+
+            //swirl current scene
+            await Animate.to(currentScene,{angle:90,duration:params.duration / 2});
+            app.stage.addChild(nextScene);
+            await Animate.to(nextScene, {angle: 90, duration: 0});
+            await Animate.to(nextScene, {angle: 0, duration: params.duration / 2});
+            //Remove it from stage
+            app.stage.removeChild(currentScene);
+            //Add it to the stage
+        }
     };
 
     /*
@@ -552,7 +609,7 @@
     Director.addScene("fourth", scene4);
 
     nextButton.onclick = (e) => {
-        Director.swipe(Director.scene["first"], Director.scene["second"], {direction: "left"});
+        Director.swirl(Director.scene["first"], Director.scene["second"], {duration: 800});
     }
 
     nextButton1.onclick = (e) => {
@@ -560,11 +617,11 @@
     }
 
     nextButton2.onclick = (e) => {
-        Director.swipe(Director.scene["third"], Director.scene["fourth"], {direction: "left"});
+        Director.fade(Director.scene["third"], Director.scene["fourth"], {duration: 700});
     }
 
     backButton.onclick = (e) => {
-        Director.swipe(Director.scene["second"], Director.scene["first"], {direction: "right"});
+        Director.swirl(Director.scene["second"], Director.scene["first"], {duration: 800});
     }
 
     backButton1.onclick = (e) => {
